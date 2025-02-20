@@ -5,7 +5,7 @@ Below is an example of a comprehensive **README.md** file for your project that 
 ```markdown
 # Dark Humor Quotes
 
-Dark Humor Quotes is a production‑ready Node.js web application designed to deliver a steady stream of dark humor motivational quotes. This project is proprietary software and is the intellectual property of **[Your Name]**. Use, reproduction, or distribution of any part of this code without explicit written permission is strictly prohibited.
+Dark Humor Quotes is a production‑ready Node.js web application designed to deliver a steady stream of dark humor motivational quotes. This project is proprietary software and is the intellectual property of **Preston West**. Use, reproduction, or distribution of any part of this code without explicit written permission is strictly prohibited.
 
 ## Table of Contents
 
@@ -131,28 +131,28 @@ dark-humor-quotes/
 
 ## License
 
-This software is proprietary and is the intellectual property of **[Your Name]**. All rights are reserved. No part of this software, including the source code and documentation, may be reproduced, distributed, or transmitted in any form or by any means—electronic, mechanical, photocopying, recording, or otherwise—without the prior written permission of **[Your Name]**.
+This software is proprietary and is the intellectual property of **Preston West**. All rights are reserved. No part of this software, including the source code and documentation, may be reproduced, distributed, or transmitted in any form or by any means—electronic, mechanical, photocopying, recording, or otherwise—without the prior written permission of **Preston West**.
 
 For permission requests, please contact:  
-**[Your Name]**  
-Email: [your.email@example.com]  
+**Preston West**  
+Email: prestonwest87@gmail.com  
 
 ### Full Proprietary License Text
 
 ```
-Copyright (c) [Year] [Your Name]
+Copyright (c) [Year] Preston West
 
 All Rights Reserved.
 
 This software and associated documentation files (the "Software") are proprietary
-to [Your Name] and contain confidential information. Unauthorized copying,
+to Preston West and contain confidential information. Unauthorized copying,
 reproduction, distribution, or modification of the Software is strictly prohibited.
 Any use, disclosure, or distribution of the Software without prior written consent
-of [Your Name] is strictly prohibited.
+of Preston West is strictly prohibited.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
 INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
-PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL [YOUR NAME] BE LIABLE FOR ANY CLAIM,
+PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL Preston West BE LIABLE FOR ANY CLAIM,
 DAMAGES, OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE,
 ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
@@ -162,8 +162,8 @@ IN THE SOFTWARE.
 
 For further inquiries, feature requests, or licensing information, please contact:
 
-**[Your Name]**  
-Email: [your.email@example.com]
+**Preston West**  
+Email: prestonwest87@gmail.com
 
 ---
 
