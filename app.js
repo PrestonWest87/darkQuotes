@@ -7,6 +7,8 @@
  *   - Persistent user storage using Cloud SQL (via db.js).
  *   - Paid membership allows custom quote generation (up to 30/day) via Vertex AI.
  *   - Fallback auto‑rotating static quotes with fade transitions.
+ *   - Logging with Winston and darkly humorous error handling.
+ *   - Toggleable accessibility mode.
  *
  * Environment Variables:
  *   - PORT (optional, default 8080)
@@ -25,13 +27,26 @@ const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const axios = require('axios');
 const db = require('./db'); // Cloud SQL module
+const winston = require('winston');
+
+// Setup Winston logger.
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.combine(
+      winston.format.timestamp(),
+      winston.format.json()
+  ),
+  transports: [
+      new winston.transports.Console()
+  ]
+});
 
 const app = express();
 const port = process.env.PORT || 8080;
 
 // Initialize the database (Cloud SQL)
 db.initialize().catch(err => {
-  console.error('Error initializing the database:', err);
+  logger.error('Error initializing the database:', err);
   process.exit(1);
 });
 
@@ -89,6 +104,7 @@ passport.use(new GoogleStrategy({
         return done(null, user);
       }
     } catch (err) {
+      logger.error('Error during Google SSO callback:', err);
       return done(err);
     }
   }
@@ -100,7 +116,7 @@ passport.use(new GoogleStrategy({
 function detectBots(req, res, next) {
   const userAgent = req.get('User-Agent') || '';
   if (/bot|crawl|spider|slurp|crawler/i.test(userAgent) && req.path !== '/robot') {
-    console.log(`Bot detected: ${userAgent}`);
+    logger.info(`Bot detected: ${userAgent}`);
     return res.redirect('/robot');
   }
   next();
@@ -206,7 +222,7 @@ app.get('/auth/google/callback',
 
 app.get('/logout', (req, res) => {
   req.logout(err => {
-    if (err) console.error(err);
+    if (err) logger.error('Error during logout:', err);
     res.redirect('/');
   });
 });
@@ -222,7 +238,7 @@ app.get('/upgrade', async (req, res) => {
     try {
       req.user = await db.updateUser(req.user);
     } catch (err) {
-      console.error('Error updating user during upgrade:', err);
+      logger.error('Error updating user during upgrade:', err);
     }
     res.redirect('/');
   } else {
@@ -258,7 +274,7 @@ function checkDailyLimit(user) {
 // ------------------------
 // Route: Generate Custom Quote via Vertex AI (Paid Members Only)
 // ------------------------
-app.post('/generate-quote', async (req, res) => {
+app.post('/generate-quote', async (req, res, next) => {
   if (!req.user) {
     return res.status(401).json({ error: 'Unauthorized. Please sign in.' });
   }
@@ -288,11 +304,28 @@ app.post('/generate-quote', async (req, res) => {
     const generatedQuote = response.data.quote;
     res.json({ quote: generatedQuote });
   } catch (error) {
-    console.error('Error generating quote via Vertex AI:', error);
-    res.status(500).json({ error: 'Error generating quote. Please try again later.' });
+    logger.error('Error generating quote via Vertex AI:', error);
+    next(error);
+  }
+});
+
+// ------------------------
+// Error Handling Middleware
+// ------------------------
+app.use((err, req, res, next) => {
+  // Log error details using Winston.
+  logger.error('Unhandled error:', { message: err.message, stack: err.stack });
+  res.status(500);
+  // Render an error page with a darkly humorous message.
+  if (req.accepts('html')) {
+    res.render('error', { message: "Well, shit. Even the abyss chuckles at our misfortune! An error has occurred. We're as surprised as you are—please try again later." });
+  } else if (req.accepts('json')) {
+    res.json({ error: "Our dark side has taken over the server! Please try again later." });
+  } else {
+    res.type('txt').send("Our dark side has taken over the server! Please try again later.");
   }
 });
 
 app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+  logger.info(`Server running on port ${port}`);
 });
