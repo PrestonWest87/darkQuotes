@@ -3,6 +3,8 @@
   Main page for Dark Humor Quotes.
   Displays auto‑rotating fallback quotes, unobtrusive Google AdSense ads (if non‑paying),
   and provides Google SSO links, upgrade options, and a toggle for accessibility mode.
+  Also provides buttons for paid users to cancel their subscription and delete their account.
+  Custom quote generation (manual and automatic) is enabled only for actively logged-in paid members.
   
   License: Proprietary – All rights reserved by Preston West.
   Author: Preston West <prestonwest87@gmail.com>
@@ -49,6 +51,8 @@
           <p>Custom Quote Generations Today: <%= user.dailyCount %> / 360</p>
           <button id="generate-btn">Generate Custom Quote</button>
           <div id="custom-quote"></div>
+          <button id="cancel-subscription-btn">Cancel Subscription</button>
+          <button id="delete-account-btn">Delete Account</button>
         <% } %>
       <% } else { %>
         <p><a href="/auth/google">Sign in with Google</a></p>
@@ -130,7 +134,7 @@
       setInterval(updateQuote, 90000);
     });
 
-    // For paid members: Custom quote generation.
+    // For paid members only: Custom quote generation
     const generateBtn = document.getElementById('generate-btn');
     if (generateBtn) {
       async function generateCustomQuote() {
@@ -162,6 +166,51 @@
 
       // Automatic generation every 4 minutes (240,000 ms)
       setInterval(generateCustomQuote, 240000);
+    }
+
+    // Cancel Subscription button functionality.
+    const cancelSubBtn = document.getElementById('cancel-subscription-btn');
+    if (cancelSubBtn) {
+      cancelSubBtn.addEventListener('click', async () => {
+        try {
+          const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+          const response = await fetch('/cancel-subscription', { 
+            method: 'POST', 
+            headers: { 
+              'Content-Type': 'application/json',
+              'X-CSRF-Token': csrfToken 
+            }
+          });
+          const data = await response.json();
+          alert(data.message || data.error);
+          window.location.reload();
+        } catch (error) {
+          alert('Error canceling subscription.');
+        }
+      });
+    }
+
+    // Delete Account button functionality.
+    const deleteAccBtn = document.getElementById('delete-account-btn');
+    if (deleteAccBtn) {
+      deleteAccBtn.addEventListener('click', async () => {
+        if (!confirm("Are you sure you want to delete your account? This action cannot be undone.")) return;
+        try {
+          const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+          const response = await fetch('/delete-account', { 
+            method: 'POST', 
+            headers: { 
+              'Content-Type': 'application/json',
+              'X-CSRF-Token': csrfToken 
+            }
+          });
+          const data = await response.json();
+          alert(data.message || data.error);
+          window.location.href = '/';
+        } catch (error) {
+          alert('Error deleting account.');
+        }
+      });
     }
   </script>
 </body>
