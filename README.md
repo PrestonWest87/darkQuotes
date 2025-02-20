@@ -136,7 +136,7 @@ Email: prestonwest87@gmail.com
 ### Full Proprietary License Text
 
 ```
-Copyright (c) [Year] Preston West
+Copyright (c) 2025 Preston West
 
 All Rights Reserved.
 
