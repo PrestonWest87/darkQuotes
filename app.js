@@ -3,14 +3,15 @@
  *
  * Main application file for the Dark Humor Quotes project.
  * Implements Google SSO, Cloud SQL persistence, custom quote generation via Vertex AI,
- * robust logging via Winston, dark humor error handling, a toggleable accessibility mode,
- * and additional security measures (Helmet, CSRF protection, rate limiting, secure cookies).
+ * recurring subscription endpoints via Stripe, robust logging via Winston, dark humor error handling,
+ * a toggleable accessibility mode, and additional security measures (Helmet, CSRF protection, rate limiting, secure cookies).
  *
  * Environment Variables:
  *   - PORT (optional, default 8080)
  *   - DB_HOST, DB_USER, DB_PASS, DB_NAME (for Cloud SQL)
  *   - YOUR_GOOGLE_CLIENT_ID, YOUR_GOOGLE_CLIENT_SECRET (for Google SSO)
  *   - VERTEX_AI_ENDPOINT, VERTEX_AI_API_KEY (for Vertex AI integration)
+ *   - STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, [PRICE_ID] (for Stripe subscriptions)
  *
  * License: Proprietary – All rights reserved by Preston West.
  * Author: Preston West <prestonwest87@gmail.com>
@@ -26,6 +27,7 @@ const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const axios = require('axios');
 const db = require('./db'); // Cloud SQL module
+const stripeRoutes = require('./subscriptions'); // Stripe subscriptions module
 const winston = require('winston');
 
 // Setup Winston logger.
@@ -189,7 +191,7 @@ function monetizationMiddleware(req, res, next) {
 app.use(monetizationMiddleware);
 
 // ------------------------
-// Fallback Static Dark Humor Quotes
+// Fallback Static Dark Humor Quotes (Expanded List)
 // ------------------------
 const fallbackQuotes = [
   "If life gives you lemons, f*cking squeeze them in the eye of your enemies.",
@@ -406,7 +408,6 @@ app.post('/generate-quote', async (req, res, next) => {
   }
   
   try {
-    // Check and reset daily count if needed.
     req.user = await checkDailyLimit(req.user);
     if (req.user.dailyCount >= 360) {
       return res.status(429).json({ error: 'Daily generation limit reached. Try again tomorrow.' });
@@ -414,7 +415,6 @@ app.post('/generate-quote', async (req, res, next) => {
     req.user.dailyCount++;
     req.user = await db.updateUser(req.user);
     
-    // Call the Vertex AI endpoint.
     const response = await axios.post(process.env.VERTEX_AI_ENDPOINT, {
       prompt: "Generate a dark humor motivational quote with light profanity that may target military, police, firefighters, and customer service. Include anti-motivational phrases such as 'Watch your face!' and 'D*am you're ugly.'"
     }, {
