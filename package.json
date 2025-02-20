@@ -1,7 +1,7 @@
 {
   "name": "dark-humor-quotes",
   "version": "1.0.0",
-  "description": "A production‑ready Node.js web application using Google SSO, Vertex AI custom quote generation, Cloud SQL on GCP, with dark humor error handling and toggleable accessibility mode.",
+  "description": "A production‑ready Node.js web application using Google SSO, Vertex AI custom quote generation, Cloud SQL on GCP, recurring subscriptions via Stripe, with dark humor error handling, toggleable accessibility mode, and SEO optimizations.",
   "main": "app.js",
   "scripts": {
     "start": "node app.js"
@@ -16,6 +16,7 @@
     "mysql2": "^2.3.3",
     "passport": "^0.6.0",
     "passport-google-oauth20": "^2.0.0",
+    "stripe": "^12.15.0",
     "winston": "^3.8.2"
   },
   "author": "Preston West <prestonwest87@gmail.com>",
