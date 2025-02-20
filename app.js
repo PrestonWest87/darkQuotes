@@ -2,13 +2,9 @@
  * app.js
  *
  * Main application file for the Dark Humor Quotes project.
- * Features:
- *   - Google SSO via Passport.js.
- *   - Persistent user storage using Cloud SQL (via db.js).
- *   - Paid membership allows custom quote generation (up to 30/day) via Vertex AI.
- *   - Fallback auto‑rotating static quotes with fade transitions.
- *   - Logging with Winston and darkly humorous error handling.
- *   - Toggleable accessibility mode.
+ * Implements Google SSO, Cloud SQL persistence, custom quote generation via Vertex AI,
+ * robust logging via Winston, dark humor error handling, a toggleable accessibility mode,
+ * and additional security measures (Helmet, CSRF protection, rate limiting, secure cookies).
  *
  * Environment Variables:
  *   - PORT (optional, default 8080)
@@ -16,13 +12,16 @@
  *   - YOUR_GOOGLE_CLIENT_ID, YOUR_GOOGLE_CLIENT_SECRET (for Google SSO)
  *   - VERTEX_AI_ENDPOINT, VERTEX_AI_API_KEY (for Vertex AI integration)
  *
- * License: Apache-2.0
- * Author: Your Name <your.email@example.com>
+ * License: Proprietary – All rights reserved by Preston West.
+ * Author: Preston West <prestonwest87@gmail.com>
  */
 
 const express = require('express');
 const path = require('path');
 const session = require('express-session');
+const helmet = require('helmet');
+const csurf = require('csurf');
+const rateLimit = require('express-rate-limit');
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const axios = require('axios');
@@ -51,13 +50,30 @@ db.initialize().catch(err => {
 });
 
 // ------------------------
+// Security Middleware
+// ------------------------
+
+// Use Helmet to set secure HTTP headers.
+app.use(helmet());
+
+// Rate Limiting - limit to 100 requests per 15 minutes per IP.
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: "Too many requests from this IP, please try again after 15 minutes."
+});
+app.use(limiter);
+
+// ------------------------
 // Session Middleware
 // ------------------------
 app.use(session({
   secret: 'your-secret-key', // Replace with a secure secret in production
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: false } // Set secure: true when using HTTPS in production
+  cookie: { 
+    secure: process.env.NODE_ENV === 'production' // Secure cookies in production
+  }
 }));
 
 // ------------------------
@@ -67,7 +83,6 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 passport.serializeUser((user, done) => {
-  // Store the google_id in the session.
   done(null, user.google_id);
 });
 passport.deserializeUser((googleId, done) => {
@@ -85,13 +100,11 @@ passport.use(new GoogleStrategy({
     try {
       let user = await db.getUserByGoogleId(profile.id);
       if (user) {
-        // Update user information if needed.
         user.displayName = profile.displayName;
         user.email = profile.emails[0].value;
         user = await db.updateUser(user);
         return done(null, user);
       } else {
-        // Create a new user record.
         const newUser = {
           google_id: profile.id,
           displayName: profile.displayName,
@@ -132,9 +145,17 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json()); // For parsing JSON bodies in POST requests
 
 // ------------------------
+// CSRF Protection Middleware
+// ------------------------
+app.use(csurf());
+app.use((req, res, next) => {
+  res.locals.csrfToken = req.csrfToken();
+  next();
+});
+
+// ------------------------
 // Monetization Middleware (Google AdSense compliant)
 // ------------------------
-// If the user is a paid member, no ads are injected.
 function monetizationMiddleware(req, res, next) {
   if (req.user && req.user.isPaying) {
     res.locals.headerAd = '';
@@ -183,7 +204,6 @@ const fallbackQuotes = [
   "The road to success is paved with failures, and a few choice expletives along the way.",
   "If you're in uniform or behind a desk, remember: your day is as unpredictable as a f*cking storm.",
   "Sometimes, the only way to survive the madness is to laugh at the absurdity of it all."
-  // ... add as many as needed.
 ];
 
 // ------------------------
@@ -275,6 +295,7 @@ function checkDailyLimit(user) {
 // Route: Generate Custom Quote via Vertex AI (Paid Members Only)
 // ------------------------
 app.post('/generate-quote', async (req, res, next) => {
+  // CSRF token is validated automatically by csurf middleware.
   if (!req.user) {
     return res.status(401).json({ error: 'Unauthorized. Please sign in.' });
   }
@@ -313,10 +334,8 @@ app.post('/generate-quote', async (req, res, next) => {
 // Error Handling Middleware
 // ------------------------
 app.use((err, req, res, next) => {
-  // Log error details using Winston.
   logger.error('Unhandled error:', { message: err.message, stack: err.stack });
   res.status(500);
-  // Render an error page with a darkly humorous message.
   if (req.accepts('html')) {
     res.render('error', { message: "Well, shit. Even the abyss chuckles at our misfortune! An error has occurred. We're as surprised as you are—please try again later." });
   } else if (req.accepts('json')) {
