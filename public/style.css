@@ -6,8 +6,8 @@
   Ad containers are styled to be unobtrusive, with minimal margins and padding,
   and are clearly separated from main content, meeting Google AdSense guidelines.
   
-  License: Apache-2.0
-  Author: Your Name <your.email@example.com>
+  License: Proprietary – All rights reserved by Preston West.
+  Author: Preston West <prestonwest87@gmail.com>
 */
 
 /* Base Reset and Typography */
@@ -93,7 +93,6 @@ button:focus {
   font-size: 0.875rem;
 }
 
-/* Additional differentiation for header vs. footer ads if needed */
 .header-ad {
   margin-bottom: 1rem;
 }
