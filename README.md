@@ -1,8 +1,4 @@
-Below is an example of a comprehensive **README.md** file for your project that uses a restrictive proprietary license. This license explicitly states that the code is your intellectual property and may not be reproduced, distributed, or otherwise used without your permission.
 
----
-
-```markdown
 # Dark Humor Quotes
 
 Dark Humor Quotes is a production‑ready Node.js web application designed to deliver a steady stream of dark humor motivational quotes. This project is proprietary software and is the intellectual property of **Preston West**. Use, reproduction, or distribution of any part of this code without explicit written permission is strictly prohibited.
@@ -168,7 +164,6 @@ Email: prestonwest87@gmail.com
 ---
 
 Happy coding, and remember: this software is for your eyes only—if you see it elsewhere, someone broke the rules!
-```
 
 ---
 
