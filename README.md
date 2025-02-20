@@ -1,42 +1,70 @@
-
 # Dark Humor Quotes
 
-Dark Humor Quotes is a production‑ready Node.js web application designed to deliver a steady stream of dark humor motivational quotes. This project is proprietary software and is the intellectual property of **Preston West**. Use, reproduction, or distribution of any part of this code without explicit written permission is strictly prohibited.
+**Dark Humor Quotes** is a production‑ready Node.js web application that delivers a never‑ending stream of dark humor and anti‑motivational quotes. This application is designed with modern security, SEO, and accessibility in mind and is deployed on Google Cloud Platform (GCP) using Cloud Run and Cloud SQL. Paid users benefit from an ad‑free experience with auto‑generated custom quotes powered by Vertex AI, while non‑paid users see unobtrusive ads.
+
+---
 
 ## Table of Contents
 
 - [Overview](#overview)
 - [Features](#features)
-- [Installation](#installation)
-- [Configuration](#configuration)
+- [Prerequisites](#prerequisites)
+- [Installation & Local Setup](#installation--local-setup)
+- [Environment Variables](#environment-variables)
+- [Google Cloud Platform Setup](#google-cloud-platform-setup)
+  - [Cloud SQL Configuration](#cloud-sql-configuration)
+  - [Cloud Run Deployment](#cloud-run-deployment)
+  - [Google SSO Setup](#google-sso-setup)
+- [Stripe Configuration](#stripe-configuration)
 - [Usage](#usage)
-- [Deployment](#deployment)
-- [Directory Structure](#directory-structure)
+- [Account Management](#account-management)
+- [Troubleshooting & FAQ](#troubleshooting--faq)
 - [License](#license)
 - [Contact](#contact)
 
+---
+
 ## Overview
 
-Dark Humor Quotes combines modern web technologies with a sleek, dark, and moody design. The application includes:
+**Dark Humor Quotes** provides a unique blend of dark humor and anti‑motivational quotes designed to entertain and provoke thought. The system supports:
+- **Google Single Sign-On (SSO)** for secure authentication.
+- **Recurring subscriptions via Stripe**, enabling a paid version that is ad‑free and receives auto‑generated custom quotes.
+- **Custom quote generation via Vertex AI**, with paid members receiving new quotes every 4 minutes (up to 360 per day).
+- **Persistent user storage** with Cloud SQL.
+- **Robust security** (Helmet, CSRF protection, rate limiting, secure sessions).
+- **SEO optimizations** and responsive design with a toggleable accessibility mode.
 
-- **Google Single Sign-On (SSO)** via Passport.js for secure authentication.
-- **Paid Membership Integration:** Upgrading to a paid membership removes ads and enables custom quote generation (up to 30 times per day) powered by Vertex AI.
-- **Persistent User Storage:** Uses Cloud SQL (MySQL) on Google Cloud Platform for storing user profiles and usage data.
-- **Robust Logging & Error Handling:** Winston is used for logging, and custom, darkly humorous error pages are provided.
-- **Toggleable Accessibility Mode:** Users can switch to an accessible high-contrast view if desired.
-- **Unobtrusive Ad Placements:** Google AdSense ads are integrated in a minimal, non-distracting manner.
+---
 
 ## Features
 
-- **Modern, Dark UI:** A sleek and modern user interface with a dark, moody color scheme.
-- **Google SSO Authentication:** Secure, one-click sign in with Google.
-- **Custom Quote Generation:** For paying members, generate custom quotes via Vertex AI.
-- **Persistent Cloud SQL Storage:** All user data is stored in a managed Cloud SQL instance.
-- **Accessibility Options:** Users can toggle an accessibility mode that increases font sizes, contrast, and overall readability.
-- **Comprehensive Logging & Error Handling:** Errors are logged via Winston and displayed with a touch of dark humor.
-- **Restrictive Proprietary License:** This code is proprietary and not to be reproduced or used without explicit permission.
+- **Dark & Moody UI:** A sleek, modern design with a dark color palette.
+- **Google SSO Authentication:** Simple and secure login using your Google account.
+- **Recurring Subscriptions:** Paid users get an ad‑free experience and access to custom quote generation.
+- **Custom Quote Generation:** Paid members receive custom quotes automatically every 4 minutes (up to 360 per day) using Vertex AI.
+- **Account Management:** Paid users can cancel their subscription and delete their account directly from the UI.
+- **Robust Security:** Helmet, CSRF protection, and rate limiting protect the application.
+- **SEO Optimized:** Meta tags for description, keywords, canonical URLs, Open Graph, and Twitter cards.
+- **Toggleable Accessibility Mode:** Users can switch to a high‑contrast, accessible view if needed.
+- **Extensive Quotes Library:** Over 120 dark humor and anti‑motivational quotes (including phrases like “Watch your face!” and “D*am you're ugly.”).
 
-## Installation
+---
+
+## Prerequisites
+
+Before you begin, ensure you have:
+
+- [Node.js (v14 or later)](https://nodejs.org/)
+- A Google Cloud Platform account with billing enabled.
+- A Cloud SQL instance (MySQL) configured.
+- A Google Cloud Run project.
+- Google API credentials for Google SSO.
+- Stripe account with subscription settings configured.
+- Vertex AI endpoint and API key (if using custom quote generation).
+
+---
+
+## Installation & Local Setup
 
 1. **Clone the Repository:**
 
@@ -47,83 +75,204 @@ Dark Humor Quotes combines modern web technologies with a sleek, dark, and moody
 
 2. **Install Dependencies:**
 
-   Make sure you have [Node.js](https://nodejs.org/) installed, then run:
-
    ```bash
    npm install
    ```
 
-## Configuration
+3. **(Optional) Create a `.env` File for Local Development:**
 
-Before running the application, set the following environment variables. These can be configured using a `.env` file (with a tool like [dotenv](https://www.npmjs.com/package/dotenv)) or via your deployment platform (e.g., Cloud Run):
+   You can use a package like [dotenv](https://www.npmjs.com/package/dotenv) to load environment variables locally. Create a `.env` file in the root directory with the following keys:
 
-- **Server Port:**
-  - `PORT` (optional, defaults to `8080`)
+   ```dotenv
+   PORT=8080
+   DB_HOST=your-db-host
+   DB_USER=your-db-user
+   DB_PASS=your-db-password
+   DB_NAME=your-db-name
+   YOUR_GOOGLE_CLIENT_ID=your-google-client-id
+   YOUR_GOOGLE_CLIENT_SECRET=your-google-client-secret
+   VERTEX_AI_ENDPOINT=https://your-vertex-ai-endpoint
+   VERTEX_AI_API_KEY=your-vertex-ai-api-key
+   STRIPE_SECRET_KEY=your-stripe-secret-key
+   STRIPE_WEBHOOK_SECRET=your-stripe-webhook-secret
+   PRICE_ID=your-stripe-price-id
+   NODE_ENV=development
+   ```
 
-- **Cloud SQL Configuration:**
-  - `DB_HOST` – Hostname or Cloud SQL socket path.
-  - `DB_USER` – Database user.
-  - `DB_PASS` – Database password.
-  - `DB_NAME` – Database name.
+4. **Run Locally:**
 
-- **Google SSO Credentials:**
-  - `YOUR_GOOGLE_CLIENT_ID` – Your Google OAuth Client ID.
-  - `YOUR_GOOGLE_CLIENT_SECRET` – Your Google OAuth Client Secret.
+   ```bash
+   npm start
+   ```
 
-- **Vertex AI Integration:**
-  - `VERTEX_AI_ENDPOINT` – URL for your Vertex AI endpoint.
-  - `VERTEX_AI_API_KEY` – API key for authenticating to Vertex AI.
+   Open your browser at [http://localhost:8080](http://localhost:8080) to view the application.
 
-Example `.env` file:
+---
 
-```dotenv
-PORT=8080
-DB_HOST=your-db-host
-DB_USER=your-db-user
-DB_PASS=your-db-password
-DB_NAME=your-db-name
-YOUR_GOOGLE_CLIENT_ID=your-google-client-id
-YOUR_GOOGLE_CLIENT_SECRET=your-google-client-secret
-VERTEX_AI_ENDPOINT=https://your-vertex-ai-endpoint
-VERTEX_AI_API_KEY=your-vertex-ai-api-key
-```
+## Environment Variables
+
+The application relies on several environment variables for configuration:
+
+- **Server & Database:**
+  - `PORT`: The port on which the app runs (default: 8080).
+  - `DB_HOST`, `DB_USER`, `DB_PASS`, `DB_NAME`: Credentials for your Cloud SQL instance.
+
+- **Google SSO:**
+  - `YOUR_GOOGLE_CLIENT_ID`
+  - `YOUR_GOOGLE_CLIENT_SECRET`
+
+- **Vertex AI:**
+  - `VERTEX_AI_ENDPOINT`
+  - `VERTEX_AI_API_KEY`
+
+- **Stripe:**
+  - `STRIPE_SECRET_KEY`
+  - `STRIPE_WEBHOOK_SECRET`
+  - `PRICE_ID` (for your subscription plan)
+
+- **Miscellaneous:**
+  - `NODE_ENV` (set to `production` in your production environment)
+
+---
+
+## Google Cloud Platform Setup
+
+### Cloud SQL Configuration
+
+1. **Create a Cloud SQL Instance:**
+   - Use the GCP Console to create a new Cloud SQL instance (MySQL).
+   - Note the connection details (host, user, password, database name).
+
+2. **Configure Connections:**
+   - Use the [Cloud SQL Proxy](https://cloud.google.com/sql/docs/mysql/connect-run) or the Cloud SQL Connector if deploying on Cloud Run.
+   - Set the appropriate environment variables (`DB_HOST`, `DB_USER`, `DB_PASS`, `DB_NAME`).
+
+### Cloud Run Deployment
+
+1. **Containerize the App:**
+   - Create a `Dockerfile` in your project root. (An example Dockerfile is provided below.)
+
+   ```Dockerfile
+   # Use Node.js LTS image
+   FROM node:16
+
+   # Create app directory
+   WORKDIR /usr/src/app
+
+   # Install app dependencies
+   COPY package*.json ./
+   RUN npm install --production
+
+   # Bundle app source code
+   COPY . .
+
+   # Expose port
+   EXPOSE 8080
+
+   # Start the application
+   CMD [ "npm", "start" ]
+   ```
+
+2. **Deploy to Cloud Run:**
+   - Use the gcloud CLI:
+
+     ```bash
+     gcloud run deploy dark-humor-quotes \
+       --image gcr.io/your-project-id/dark-humor-quotes \
+       --platform managed \
+       --region your-region \
+       --allow-unauthenticated \
+       --set-env-vars PORT=8080,DB_HOST=your-db-host,DB_USER=your-db-user,DB_PASS=your-db-pass,DB_NAME=your-db-name,YOUR_GOOGLE_CLIENT_ID=your-google-client-id,YOUR_GOOGLE_CLIENT_SECRET=your-google-client-secret,VERTEX_AI_ENDPOINT=your-vertex-ai-endpoint,VERTEX_AI_API_KEY=your-vertex-ai-api-key,STRIPE_SECRET_KEY=your-stripe-secret-key,STRIPE_WEBHOOK_SECRET=your-stripe-webhook-secret,PRICE_ID=your-stripe-price-id,NODE_ENV=production
+     ```
+
+3. **Configure Cloud SQL Access:**
+   - In Cloud Run, add the Cloud SQL instance connection name under the "Connections" tab or via gcloud using the `--add-cloudsql-instances` flag.
+
+### Google SSO Setup
+
+1. **Create Credentials:**
+   - Visit the [Google Cloud Console](https://console.developers.google.com/), create a new project (or select an existing one), and enable the "Google+ API" or "People API".
+   - Create OAuth 2.0 credentials, set the authorized redirect URI to `https://your-domain.com/auth/google/callback`.
+
+2. **Update Environment Variables:**
+   - Set `YOUR_GOOGLE_CLIENT_ID` and `YOUR_GOOGLE_CLIENT_SECRET` with your credentials.
+
+---
+
+## Stripe Configuration
+
+1. **Set Up a Stripe Account:**
+   - Create a Stripe account and set up your subscription product/price.
+   - Note your Price ID and secret keys.
+
+2. **Configure Webhooks:**
+   - In the Stripe Dashboard, configure a webhook endpoint to point to `https://your-domain.com/subscriptions/webhook`.
+   - Set the webhook secret (`STRIPE_WEBHOOK_SECRET`) in your environment.
+
+3. **Update Environment Variables:**
+   - Set `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, and `PRICE_ID`.
+
+---
 
 ## Usage
 
-- **Start the Application:**
-
-  ```bash
-  npm start
-  ```
-
 - **Access the Application:**
+  - Visit your deployed URL (e.g., `https://dark-humor-quotes-abc123.run.app`).
 
-  Open your browser and navigate to [http://localhost:8080](http://localhost:8080).
+- **Sign In:**
+  - Click "Sign in with Google" to create an account via Google SSO.
 
-- **Key Functionalities:**
-  - **Sign In:** Use Google SSO to log in.
-  - **Upgrade:** Click the upgrade link to become a paid member for an ad-free experience and custom quote generation.
-  - **Toggle Accessibility Mode:** Use the "Toggle Accessibility" button to switch to an accessible, high-contrast view.
-  - **Custom Quote Generation:** Paid members can click the "Generate Custom Quote" button to request a quote from Vertex AI (up to 30 times per day).
+- **Upgrade to Paid Membership:**
+  - Once signed in, click the "Upgrade" link to simulate payment (or use Stripe's subscription flow via the `/subscriptions/create-subscription` endpoint).
+  - Paid members will no longer see ads and will receive custom quotes from Vertex AI every 4 minutes (up to 360 per day).
 
-## Deployment
+- **Account Management:**
+  - Paid members can cancel their subscription by clicking the "Cancel Subscription" button.
+  - They can also delete their account by clicking the "Delete Account" button.
 
-This application is designed for deployment on Google Cloud Platform (GCP) using Cloud Run. Ensure that your Cloud SQL instance is properly configured and that your Cloud Run service has the necessary access (via the Cloud SQL Proxy or Cloud SQL Connector). Set the required environment variables in your Cloud Run configuration.
+- **Custom Quote Generation:**
+  - For paid members, custom quotes are generated automatically every 4 minutes. Manual generation is also available via the "Generate Custom Quote" button.
 
-## Directory Structure
+---
 
-```
-dark-humor-quotes/
-├── package.json          # Project metadata and dependencies
-├── app.js                # Main application file
-├── db.js                 # Cloud SQL database module for user management
-├── public/
-│   └── style.css         # CSS for dark, moody, modern design with toggleable accessibility
-└── views/
-    ├── index.ejs         # Main view for the application
-    ├── robot.ejs         # View for detected bot traffic
-    └── error.ejs         # Error view with dark humor messaging
-```
+## Account Management
+
+### Cancel Subscription
+
+- **Endpoint:** `POST /cancel-subscription`
+- **Function:** Cancels the active Stripe subscription at the period end and updates the user record to mark them as not paying.
+- **Usage:** Accessible via the "Cancel Subscription" button on the main page (only visible for paid users).
+
+### Delete Account
+
+- **Endpoint:** `POST /delete-account`
+- **Function:** Cancels any active subscription, deletes the user's record from the database, and logs them out.
+- **Usage:** Accessible via the "Delete Account" button on the main page (only visible for logged-in users).
+
+---
+
+## Troubleshooting & FAQ
+
+- **MySQL/Cloud SQL Issues:**
+  - Ensure that your Cloud SQL instance is running and that your connection details (host, user, password, database) are correct.
+  - Verify that Cloud Run has the correct permissions and connection settings to access Cloud SQL.
+
+- **Google SSO Issues:**
+  - Ensure that your OAuth credentials are correct and that the authorized redirect URI matches exactly.
+
+- **Stripe Issues:**
+  - Verify that your Stripe keys and Price ID are correctly set.
+  - Use the Stripe CLI or Dashboard logs to debug webhook events.
+
+- **Vertex AI Integration:**
+  - Confirm that your Vertex AI endpoint is reachable and that your API key is valid.
+  - Check your logs for any errors related to custom quote generation.
+
+- **Deployment Issues on GCP:**
+  - Make sure all environment variables are set in Cloud Run.
+  - Review the Cloud Run logs and Cloud SQL connection settings if issues arise.
+
+---
 
 ## License
 
@@ -131,12 +280,12 @@ This software is proprietary and is the intellectual property of **Preston West*
 
 For permission requests, please contact:  
 **Preston West**  
-Email: prestonwest87@gmail.com  
+Email: [prestonwest87@gmail.com](mailto:prestonwest87@gmail.com)
 
 ### Full Proprietary License Text
 
 ```
-Copyright (c) 2025 Preston West
+Copyright (c) [Year] Preston West
 
 All Rights Reserved.
 
@@ -148,23 +297,17 @@ of Preston West is strictly prohibited.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
 INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
-PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL Preston West BE LIABLE FOR ANY CLAIM,
+PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL PRESTON WEST BE LIABLE FOR ANY CLAIM,
 DAMAGES, OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE,
 ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
 ```
+
+---
 
 ## Contact
 
 For further inquiries, feature requests, or licensing information, please contact:
 
 **Preston West**  
-Email: prestonwest87@gmail.com
-
----
-
-Happy coding, and remember: this software is for your eyes only—if you see it elsewhere, someone broke the rules!
-
----
-
-Save the above text as `README.md` in your project root. When you add this file to your GitHub repository, commit it along with the rest of your source code. This README provides a full overview of the project, installation instructions, usage details, and a restrictive proprietary license notice that clearly marks the code as your intellectual property.
+Email: [prestonwest87@gmail.com](mailto:prestonwest87@gmail.com)
