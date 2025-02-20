@@ -10,8 +10,8 @@
  *   - DB_PASS: Database password
  *   - DB_NAME: Database name
  *
- * License: Apache-2.0
- * Author: Your Name <your.email@example.com>
+ * License: Proprietary – All rights reserved by Preston West.
+ * Author: Preston West <prestonwest87@gmail.com>
  */
 
 const mysql = require('mysql2/promise');
