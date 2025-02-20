@@ -2,7 +2,7 @@
  * db.js
  * 
  * Database module for the Dark Humor Quotes project.
- * Uses mysql2 (promise-based) to connect to a Cloud SQL instance on GCP.
+ * Uses mysql2 (promise‑based) to connect to a Cloud SQL instance on GCP.
  *
  * Required environment variables:
  *   - DB_HOST: Hostname or Cloud SQL socket path
