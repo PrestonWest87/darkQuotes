@@ -1,8 +1,8 @@
 <!--
   index.ejs
-  Main page for Dark Humor Quotes project.
-  Displays auto‑rotating fallback quotes, Google AdSense ad units (if non‑paying),
-  and provides Google SSO links and upgrade/custom quote generation options.
+  Main page for Dark Humor Quotes.
+  Displays auto‑rotating fallback quotes, unobtrusive Google AdSense ads (if non‑paying),
+  and provides Google SSO links, upgrade options, and a toggle for accessibility mode.
   
   License: Apache-2.0
   Author: Your Name <your.email@example.com>
@@ -21,6 +21,7 @@
   <div class="container">
     <header>
       <h1>Dark Humor Motivational Quotes</h1>
+      <button id="toggle-accessibility" aria-pressed="false">Toggle Accessibility</button>
       <% if (user) { %>
         <p>Welcome, <%= user.displayName %>! (<a href="/logout">Logout</a>)</p>
         <% if (!user.isPaying) { %>
@@ -34,7 +35,8 @@
       <% } else { %>
         <p><a href="/auth/google">Sign in with Google</a></p>
       <% } %>
-      <div class="ad-container">
+      <!-- Unobtrusive header ad container -->
+      <div class="ad-container header-ad">
         <%- headerAd %>
       </div>
     </header>
@@ -42,13 +44,30 @@
       <div id="quote-display" class="quote"></div>
     </main>
     <footer>
-      <div class="ad-container">
+      <!-- Unobtrusive footer ad container -->
+      <div class="ad-container footer-ad">
         <%- footerAd %>
       </div>
       <p>&copy; 2025 Dark Humor Quotes</p>
     </footer>
   </div>
   <script>
+    // Accessibility toggle script:
+    // When clicked, toggles the "accessibility-mode" class on the body element
+    // and saves the user preference in localStorage.
+    const toggleBtn = document.getElementById('toggle-accessibility');
+    const isAccessible = localStorage.getItem('accessibility-mode') === 'true';
+    if (isAccessible) {
+      document.body.classList.add('accessibility-mode');
+      toggleBtn.setAttribute('aria-pressed', 'true');
+    }
+    toggleBtn.addEventListener('click', () => {
+      document.body.classList.toggle('accessibility-mode');
+      const enabled = document.body.classList.contains('accessibility-mode');
+      toggleBtn.setAttribute('aria-pressed', enabled.toString());
+      localStorage.setItem('accessibility-mode', enabled);
+    });
+
     // Auto-rotating fallback quotes with fade transitions.
     let quotesQueue = [];
     let currentIndex = 0;
