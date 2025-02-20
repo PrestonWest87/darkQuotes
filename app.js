@@ -3,8 +3,9 @@
  *
  * Main application file for the Dark Humor Quotes project.
  * Implements Google SSO, Cloud SQL persistence, custom quote generation via Vertex AI,
- * recurring subscription endpoints via Stripe, robust logging via Winston, dark humor error handling,
- * a toggleable accessibility mode, and additional security measures (Helmet, CSRF protection, rate limiting, secure cookies).
+ * recurring subscription endpoints via Stripe, account management endpoints (cancel subscription and delete account),
+ * robust logging via Winston, dark humor error handling, a toggleable accessibility mode,
+ * and additional security measures (Helmet, CSRF protection, rate limiting, secure cookies).
  *
  * Environment Variables:
  *   - PORT (optional, default 8080)
@@ -28,6 +29,8 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const axios = require('axios');
 const db = require('./db'); // Cloud SQL module
 const stripeRoutes = require('./subscriptions'); // Stripe subscriptions module
+const Stripe = require('stripe');
+const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 const winston = require('winston');
 
 // Setup Winston logger.
@@ -54,11 +57,7 @@ db.initialize().catch(err => {
 // ------------------------
 // Security Middleware
 // ------------------------
-
-// Use Helmet to set secure HTTP headers.
 app.use(helmet());
-
-// Rate Limiting - limit to 100 requests per 15 minutes per IP.
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
@@ -189,6 +188,11 @@ function monetizationMiddleware(req, res, next) {
   next();
 }
 app.use(monetizationMiddleware);
+
+// ------------------------
+// Use Stripe Subscriptions Routes
+// ------------------------
+app.use('/subscriptions', stripeRoutes);
 
 // ------------------------
 // Fallback Static Dark Humor Quotes (Expanded List)
@@ -368,6 +372,84 @@ app.get('/upgrade', async (req, res) => {
     res.redirect('/');
   } else {
     res.redirect('/');
+  }
+});
+
+// ------------------------
+// New Endpoint: Cancel Subscription
+// ------------------------
+app.post('/cancel-subscription', async (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({ error: 'Unauthorized. Please sign in.' });
+  }
+  if (!req.user.isPaying) {
+    return res.status(400).json({ error: 'You do not have an active subscription.' });
+  }
+  
+  try {
+    const customerId = req.user.stripe_customer_id;
+    if (!customerId) {
+      return res.status(400).json({ error: 'No Stripe customer associated with this account.' });
+    }
+    
+    // List active subscriptions for this customer.
+    const subscriptions = await stripe.subscriptions.list({
+      customer: customerId,
+      status: 'active',
+      limit: 1,
+    });
+    if (subscriptions.data.length > 0) {
+      const subscriptionId = subscriptions.data[0].id;
+      // Cancel the subscription at period end.
+      await stripe.subscriptions.update(subscriptionId, {
+        cancel_at_period_end: true
+      });
+      // Update user record to mark as not paying.
+      req.user.isPaying = false;
+      await db.updateUser(req.user);
+      return res.json({ message: 'Subscription cancellation scheduled at period end.' });
+    } else {
+      return res.status(400).json({ error: 'No active subscription found.' });
+    }
+  } catch (error) {
+    logger.error('Error canceling subscription:', error);
+    next(error);
+  }
+});
+
+// ------------------------
+// New Endpoint: Delete Account
+// ------------------------
+app.post('/delete-account', async (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({ error: 'Unauthorized. Please sign in.' });
+  }
+  
+  try {
+    // If user has an active subscription, cancel it.
+    if (req.user.stripe_customer_id) {
+      const subscriptions = await stripe.subscriptions.list({
+        customer: req.user.stripe_customer_id,
+        status: 'active',
+        limit: 1,
+      });
+      if (subscriptions.data.length > 0) {
+        const subscriptionId = subscriptions.data[0].id;
+        await stripe.subscriptions.del(subscriptionId);
+      }
+    }
+    
+    // Delete the user from the database.
+    await db.pool.query("DELETE FROM users WHERE google_id = ?", [req.user.google_id]);
+    
+    // Log out the user.
+    req.logout(err => {
+      if (err) logger.error('Error during logout after account deletion:', err);
+      res.json({ message: 'Account deleted successfully.' });
+    });
+  } catch (error) {
+    logger.error('Error deleting account:', error);
+    next(error);
   }
 });
 
