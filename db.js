@@ -26,10 +26,10 @@ if (
 }
 
 const pool = mysql.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASS,
-  database: process.env.DB_NAME,
+  host: process.env.DB_HOST,        
+  user: process.env.DB_USER,        
+  password: process.env.DB_PASS,    
+  database: process.env.DB_NAME,    
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
@@ -37,6 +37,7 @@ const pool = mysql.createPool({
 
 /**
  * Initializes the "users" table if it doesn't already exist.
+ * Now includes stripe_customer_id to store Stripe customer references.
  */
 async function initialize() {
   const createTableQuery = `
@@ -45,6 +46,7 @@ async function initialize() {
       google_id VARCHAR(255) UNIQUE,
       displayName VARCHAR(255),
       email VARCHAR(255),
+      stripe_customer_id VARCHAR(255),
       isPaying TINYINT(1) DEFAULT 0,
       dailyCount INT DEFAULT 0,
       lastReset DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -65,19 +67,30 @@ async function getUserByGoogleId(googleId) {
 }
 
 /**
+ * Retrieves a user by their email.
+ * @param {string} email
+ * @returns {Promise<Object>} User record.
+ */
+async function getUserByEmail(email) {
+  const [rows] = await pool.query("SELECT * FROM users WHERE email = ?", [email]);
+  return rows[0];
+}
+
+/**
  * Creates a new user record.
- * @param {Object} userData - Contains google_id, displayName, email, isPaying, dailyCount, lastReset.
+ * @param {Object} userData - Contains google_id, displayName, email, stripe_customer_id, isPaying, dailyCount, lastReset.
  * @returns {Promise<Object>} Created user record.
  */
 async function createUser(userData) {
   const query = `
-    INSERT INTO users (google_id, displayName, email, isPaying, dailyCount, lastReset)
-    VALUES (?, ?, ?, ?, ?, ?)
+    INSERT INTO users (google_id, displayName, email, stripe_customer_id, isPaying, dailyCount, lastReset)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
   `;
   const params = [
     userData.google_id,
     userData.displayName,
     userData.email,
+    userData.stripe_customer_id || null,
     userData.isPaying ? 1 : 0,
     userData.dailyCount,
     userData.lastReset
@@ -89,18 +102,19 @@ async function createUser(userData) {
 
 /**
  * Updates an existing user record.
- * @param {Object} userData - Contains google_id, displayName, email, isPaying, dailyCount, lastReset.
+ * @param {Object} userData - Contains google_id, displayName, email, stripe_customer_id, isPaying, dailyCount, lastReset.
  * @returns {Promise<Object>} Updated user record.
  */
 async function updateUser(userData) {
   const query = `
     UPDATE users
-    SET displayName = ?, email = ?, isPaying = ?, dailyCount = ?, lastReset = ?
+    SET displayName = ?, email = ?, stripe_customer_id = ?, isPaying = ?, dailyCount = ?, lastReset = ?
     WHERE google_id = ?
   `;
   const params = [
     userData.displayName,
     userData.email,
+    userData.stripe_customer_id || null,
     userData.isPaying ? 1 : 0,
     userData.dailyCount,
     userData.lastReset,
@@ -114,6 +128,7 @@ module.exports = {
   pool,
   initialize,
   getUserByGoogleId,
+  getUserByEmail,
   createUser,
   updateUser
 };
