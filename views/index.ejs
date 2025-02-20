@@ -4,8 +4,8 @@
   Displays auto‑rotating fallback quotes, unobtrusive Google AdSense ads (if non‑paying),
   and provides Google SSO links, upgrade options, and a toggle for accessibility mode.
   
-  License: Apache-2.0
-  Author: Your Name <your.email@example.com>
+  License: Proprietary – All rights reserved by Preston West.
+  Author: Preston West <prestonwest87@gmail.com>
 -->
 <!DOCTYPE html>
 <html lang="en">
@@ -16,6 +16,8 @@
   <link rel="stylesheet" href="/style.css">
   <!-- Google AdSense script required by Google -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <!-- CSRF token for AJAX requests -->
+  <meta name="csrf-token" content="<%= csrfToken %>">
 </head>
 <body>
   <div class="container">
@@ -53,8 +55,6 @@
   </div>
   <script>
     // Accessibility toggle script:
-    // When clicked, toggles the "accessibility-mode" class on the body element
-    // and saves the user preference in localStorage.
     const toggleBtn = document.getElementById('toggle-accessibility');
     const isAccessible = localStorage.getItem('accessibility-mode') === 'true';
     if (isAccessible) {
@@ -120,7 +120,14 @@
       generateBtn.addEventListener('click', async () => {
         generateBtn.disabled = true;
         try {
-          const response = await fetch('/generate-quote', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+          const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+          const response = await fetch('/generate-quote', { 
+            method: 'POST', 
+            headers: { 
+              'Content-Type': 'application/json',
+              'X-CSRF-Token': csrfToken 
+            }
+          });
           const data = await response.json();
           const customQuoteElem = document.getElementById('custom-quote');
           if (data.quote) {
