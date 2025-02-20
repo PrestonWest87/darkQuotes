@@ -12,6 +12,7 @@
  *
  * License: Proprietary – All rights reserved by Preston West.
  * Author: Preston West <prestonwest87@gmail.com>
+ *
  */
 
 const mysql = require('mysql2/promise');
