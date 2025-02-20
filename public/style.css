@@ -1,0 +1,92 @@
+/* 
+  style.css
+  Responsive styling for the Dark Humor Quotes project.
+  Ensures a smooth layout and fade transitions across devices.
+  
+  License: Apache-2.0
+  Author: Your Name <your.email@example.com>
+*/
+
+body {
+  font-family: Arial, sans-serif;
+  background: #222;
+  color: #eee;
+  margin: 0;
+  padding: 0;
+  line-height: 1.5;
+}
+
+.container {
+  width: 95%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  text-align: center;
+}
+
+header, footer {
+  margin-bottom: 20px;
+}
+
+.quote {
+  font-size: 1.5em;
+  margin: 40px 0;
+  min-height: 100px;
+  opacity: 1;
+  transition: opacity 1s ease-in-out;
+}
+
+.fade-out {
+  opacity: 0;
+}
+
+.fade-in {
+  opacity: 1;
+}
+
+.ad-container {
+  margin: 10px 0;
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+}
+
+/* Responsive adjustments */
+
+/* For very small devices (e.g., smartwatches) */
+@media (max-width: 320px) {
+  .container {
+    padding: 10px;
+  }
+  .quote {
+    font-size: 1.2em;
+  }
+}
+
+/* For small mobile devices */
+@media (min-width: 321px) and (max-width: 480px) {
+  .quote {
+    font-size: 1.4em;
+  }
+}
+
+/* For tablets and larger mobile devices */
+@media (min-width: 481px) and (max-width: 768px) {
+  .quote {
+    font-size: 1.5em;
+  }
+}
+
+/* For small desktops or large tablets */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .quote {
+    font-size: 1.6em;
+  }
+}
+
+/* For desktops, smart TVs, and large displays */
+@media (min-width: 1025px) {
+  .quote {
+    font-size: 1.8em;
+  }
+}
