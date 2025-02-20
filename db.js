@@ -12,7 +12,6 @@
  *
  * License: Proprietary – All rights reserved by Preston West.
  * Author: Preston West <prestonwest87@gmail.com>
- *
  */
 
 const mysql = require('mysql2/promise');
@@ -27,10 +26,10 @@ if (
 }
 
 const pool = mysql.createPool({
-  host: process.env.DB_HOST,        // e.g., "127.0.0.1" or Cloud SQL socket path
-  user: process.env.DB_USER,        // e.g., "mydbuser"
-  password: process.env.DB_PASS,    // e.g., "mydbpassword"
-  database: process.env.DB_NAME,    // e.g., "mydbname"
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: process.env.DB_NAME,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
