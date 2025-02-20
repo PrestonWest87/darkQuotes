@@ -1,0 +1,19 @@
+{
+  "name": "dark-humor-quotes",
+  "version": "1.0.0",
+  "description": "A production‑ready Node.js web application using Google SSO, Vertex AI custom quote generation, and Cloud SQL integration on GCP.",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "axios": "^0.27.2",
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "mysql2": "^2.3.3",
+    "passport": "^0.6.0",
+    "passport-google-oauth20": "^2.0.0"
+  },
+  "author": "Your Name <your.email@example.com>",
+  "license": "Apache-2.0"
+}
